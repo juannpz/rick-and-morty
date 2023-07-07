@@ -1,0 +1,12 @@
+.App {
+   display: flex;
+   flex-direction: column;
+   background-color:whitesmoke;
+   background-size: cover;
+   background-repeat: no-repeat;
+   min-height: 100vh;
+}
+
+.titleContainer {
+   text-align: center;
+}

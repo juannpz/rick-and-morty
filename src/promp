@@ -1,0 +1,552 @@
+Te voy a compartir los archivos de mi proyecto para que entiendas todas las consultas
+
+Es un proyecto de react creado con vite. Estoy trabajando tambien con redux
+
+estos son mis componentes
+App.jsx
+import styles from './App.module.css';
+import { useEffect, useState } from 'react';
+import Nav from './components/Nav/Nav'
+import axios from 'axios';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import About from './components/About/About';
+import Home from './components/Home/Home';
+import Detail from './components/Detail/Detail';
+import Form from './components/Form/Form';
+
+function App() {
+
+   //* declaro  un estado, con valor inicial [] --> array vacío, que retorna un arreglo con dos elementos. El primero es el nombre del estado con su valor inicial y el segundo es el modificador de estado --> setCharacters
+   const [characters, setCharacters] = useState([])
+
+   const navigate = useNavigate()
+   const [access, setAccess] = useState(false)
+   const email = "ejemplo@gmail.com"
+   const password = "123456"
+
+   const login = (userData) => {
+      if (userData.password === password && userData.email === email) {
+      setAccess(true)
+      navigate("/home")
+      }
+   }
+   
+   useEffect(() => {
+      !access && navigate("/")
+   }, [access, navigate])
+
+   const onClose = (id) => {
+      let filteredChars = characters.filter(e => {return e.id !== id})
+      setCharacters(filteredChars)
+   }
+
+   const onSearch = (id) => {
+      // Verificar si el personaje ya está siendo mostrado
+      const isCharacterShown = characters.some((e) => e.id === id)
+      if (isCharacterShown) alert('El personaje ya está siendo mostrado')
+      else {
+        axios(`https://rickandmortyapi.com/api/character/${id}`)
+         .then(({ data }) => {
+            if (data.name) {
+               const characterExists = characters.find((character) => character.id === data.id)
+               if (!characterExists) setCharacters((oldChars) => [...oldChars, data])
+               else alert('El personaje ya está siendo mostrado')
+            }
+         })
+         .catch((error) => {
+            alert('No hay personajes con ese id');
+            console.error(error);
+          })
+      }
+   }
+
+   return (
+      <div className={styles.App}>
+         <div className={styles.titleContainer}>
+            <h1>RICK AND MORTY</h1>
+         </div>
+         {location.pathname !== "/" &&  <Nav onSearch={onSearch}/>}
+        
+         <Routes>
+            <Route
+               path= '/home'
+               element= {<Home
+                  onClose= {onClose}
+                  characters= {characters}/>}
+            />
+            <Route
+               path= '/'
+               element= {<Form login= {login}/>}
+            />
+            <Route
+               path= '/about'
+               element= {<About/>}
+            />
+            <Route
+               path= '/detail/:id'
+               element= {<Detail/>}
+            />
+            <Route
+               path= '/create'
+               element= {<Form/>}
+            />
+         </Routes>
+      </div>
+   );
+}  
+
+export default App;
+
+Nav.jsx
+import SearchBar from "./SearchBar/SearchBar";
+import { Link } from "react-router-dom";
+import styles from "./Nav.module.css"
+
+const Nav = (props) => {
+    return (
+        <div className={styles.navContainer}>
+            <div className={styles.linksContainer}>
+                <Link className={styles.link}to="/about">about</Link>
+                <Link className={styles.link}to="/home">home</Link>
+                <Link className={styles.link}to="/create">create</Link>
+            </div>
+            <div className={styles.searchBarContainer}>
+                <SearchBar onSearch={props.onSearch} />
+            </div>
+        </div>
+    )
+}
+
+export default Nav
+
+SearchBar.jsx
+import { useState } from "react";
+import styles from './SearchBar.module.css'
+
+ const SearchBar = (props) => {
+
+   const [id, setId] = useState("")
+   const handleChange = (event) => {
+      console.log("funca", event.target.value);
+      setId(event.target.value)
+   }
+
+   return (
+      <div className={styles.addContainer}>
+         <input className={styles.StyledInput}  
+
+            onChange={handleChange}
+            value={id} 
+            placeholder="ingresa el id del pj"/>
+         <button className={styles.StyledButton}
+            onClick={() => props.onSearch(id)}>Agregar
+         </button>
+      </div>
+   );
+}
+
+export default SearchBar
+
+Cards.jsx
+   import Card from '../Card/Card';
+   import styles from './Cards.module.css'
+
+   const Cards = (props) => {
+
+      return (
+      <div className={styles.CardsContainer}>
+         {props.characters.map((e) => {
+            return <Card
+            id= {e.id}
+            key= {e.id}
+            name={e.name}
+            species={e.species}
+            onClose={props.onClose} 
+            gender={e.gender}
+            status={e.status}
+            image={e.image}
+            origin={e.origin.name}
+            />
+         })}
+      </div>
+      )
+   }
+
+   export default Cards
+
+Card.jsx
+
+import { Link } from "react-router-dom"
+import styles from "./Card.module.css"
+import { useState } from "react";
+import { addFav, removeFav } from "../../redux/actions";
+import { connect } from "react-redux";
+
+ const Card = ({
+  id,
+  key,
+  name,
+  species,
+  onClose,
+  gender,
+  status,
+  image,
+  origin,
+  myFavorites,
+ }) => {
+  const [isRemoving, setIsRemoving] = useState(false)
+  const [isFav, setIsFav] = useState(false)
+
+  const handleFav = () => {
+    if (isFav) {
+      setIsFav(false);
+      removeFav(id)
+    } else {
+      setIsFav(true);
+      addFav(
+        id,
+        key,
+        name,
+        species,
+        gender,
+        status,
+        image,
+        origin,
+      )
+      console.log(myFavorites);
+    }
+  }
+
+  const handleRemove = () => {
+    setIsRemoving(true)
+    setTimeout(() => onClose(id), 1000)
+  }
+
+  return (
+  <div className={`${styles.CardContainer} ${isRemoving ? styles.fadeOut : ''}`}>
+    <div className={styles.ButtonContainer}>
+      <button className={styles.Button} onClick={handleRemove}>X</button>
+      {
+   isFav ? (
+      <button onClick={handleFav}>❤️</button>
+   ) : (
+      <button onClick={handleFav}>🤍</button>
+   )
+}
+    </div>
+    <div className={styles.ImageContainer}>
+      <img className={styles.img} src={image} alt={name} />
+    </div>
+    <div className={styles.NameContainer}>
+      <Link className={styles.link} to={`/detail/${id}`}>
+        <div className={styles.StyledName}>{name.toUpperCase()}</div>
+      </Link>
+    </div>
+    <div className={styles.InfoContainer}>
+      <span className={styles.Info}>{species}</span>
+      <span className={styles.Info}>{gender}</span>
+      <span className={styles.Info}>{status}</span>
+      <span className={styles.Info}>{origin}</span>
+    </div>
+  </div>
+    
+  );
+}
+
+const mapStateToProps = (state) => {
+  return {
+    myFavorites: state.myFavorites,
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addFav: (char) => dispatch(addFav(char)),
+    removeFav: (id) => dispatch(removeFav(id)),
+  }
+}
+
+const connectedCard = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Card)
+
+export default connectedCard
+
+Detail.jsx
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+
+const Section = styled.section`
+    display: flex;
+    flex-direction: column;
+`
+
+const Detail = (props) => {
+
+    const {id} = useParams()
+    console.log(id);
+
+    const [character, setCharacter] = useState({})
+
+
+    //[] --> montaje
+    // [] update
+    // ()
+    useEffect(() => {
+        axios(`https://rickandmortyapi.com/api/character/${id}`).then(({ data }) => {
+           if (data.name) {
+              setCharacter(data);
+           } else {
+              window.alert('No hay personajes con ese ID');
+           }
+        });
+        return setCharacter({});
+     }, [id]);
+
+     console.log(character.origin);
+    return (
+        <div>
+            <h3>Nombre: {character.name && character.name}</h3>
+            <img src={character.image} alt= {character.name}/>
+            <h5></h5>
+            <Section>
+                <span>Estatus: {character.status ? character.status : "data not found"}</span>
+                <span>Especie: {character.species && character.species}</span>
+                <span>Genero: {character.gender && character.gender}</span>
+                {/* <span>origen: {character.origin.name && character.origin.name}</span> */}
+                
+            </Section>
+        </div>
+    )
+}
+
+export default Detail
+
+About.jsx
+import React from "react";
+
+const About = () => {
+    return (
+        <div>
+            soy el about
+        </div>
+    )
+}
+
+export default About
+
+Form.jsx
+import { useState } from "react";
+import styles from "./Form.module.css"
+
+const Form = (props) => {
+
+    const [user, setUser] = useState({
+        email: "", 
+        username: "",
+        password: ""
+    })
+
+    const [errors, setErrors] = useState({})
+
+    const handleSubmit = (event) => {
+        event.preventDefault()
+        props.login(user)
+    }
+
+    const validate = (input) => {
+        const error = {}
+        const regexEmail = (/\S+@\S+\.\S+/)
+        const regexPassword = new RegExp("[0-9]")
+        if (!regexEmail.test(input.email)) error.email = "formato de e-mail incorrecto"
+        if (!input.email) error.email = "ingresa un email"
+        if (input.email.length > 35) error.email = "el email no puedo tener más de 35 caracteres"
+        if (!regexPassword.test(input.password)) error.password = "password debe tener al menos un número"
+        if (input.password.length <  6 || input.password.length > 10) error.password = "debe tener entre 6 y 10 caracteres"
+        return error
+    }
+    
+    const handleChange = (event) => {
+        // if (event.target.name === "username") setUser({...user, username: event.target.value})
+        // else if (event.target.name === "email") setUser({...user, email: event.target.value.toLowerCase()})
+        // else if(event.target.name === "password") setUser({...user, password: event.target.value})
+
+        const {name, value} = event.target
+        setUser({
+            ...user,
+            [name] : value})
+        setErrors(validate({
+            ...user,
+            [name]: value
+        }))   
+    }
+
+    return (
+    <div>
+        <form onSubmit={handleSubmit}>
+
+            <label >user</label>
+            <input
+                key="1"
+                onChange={handleChange}
+                value= {user.username}type="text"
+                placeholder="username"
+                name="username" />
+
+            <label >email</label>
+            <input
+                key="2"
+                onChange={handleChange}
+                value= {user.email}
+                type="text"
+                placeholder="email"
+                name="email"/>
+            <span>{errors.email && errors.email}</span>
+
+            <label>Password</label>
+            <input
+                key="3"
+                onChange={handleChange}
+                value= {user.password}
+                type="password"
+                placeholder="password"
+                name="password"/>
+            <span>{errors.password && errors.password}</span>
+
+            <input
+                key=""
+                type="submit" 
+                placeholder="submit"
+                name="submit">
+            </input>
+        </form>
+    </div>
+    )
+}
+export default Form
+
+Home.jsx
+import Cards from "../Cards/Cards"
+
+const Home = (props) => {
+    return (
+        <div>
+            <Cards
+                onClose= {props.onClose}
+                characters= {props.characters}
+                />
+        </div>
+    )
+}
+
+export default Home
+
+mi archivo main.jsx
+import ReactDOM from 'react-dom/client';
+import './main.css';
+import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+
+const root = ReactDOM.createRoot(document.getElementById('root'))
+
+root.render (
+    <Provider store={store}>
+        <BrowserRouter>
+            <App />
+        </BrowserRouter>
+    </Provider>
+)
+
+mi archivo index.html
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+mis archivos de redux
+store.js
+import { createStore, applyMiddleware, compose } from "redux";
+// import { configureStore } from "@reduxjs/toolkit";
+import reducer from "./reducer";
+import thunkMiddleware from "redux-thunk";
+
+const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+
+// creo el store de redux pasandole el reducer
+const store = createStore(
+    reducer,
+    composeEnhancer(applyMiddleware(thunkMiddleware))
+    )
+
+export default store
+
+reducer.js
+import { ADD_FAV, REMOVE_FAV } from "./actions"
+
+const initialState = {
+    myFavorites: []
+}
+
+const reducer = (state = initialState, action) => {
+    switch (action.type) {
+        
+        default:
+            return {...state}
+
+        case ADD_FAV:
+            return {
+                ...state,
+                myFavorites: [...state.myFavorites, action.payload],
+            }
+
+        case REMOVE_FAV:
+            return {
+                ...state,
+                myFavorites: state.myFavorites.filter(
+                    (char) => char.id !== action.payload
+                  )
+            }
+    }
+}
+
+export default reducer
+
+actions.js
+const ADD_FAV = "ADD_FAV"
+const REMOVE_FAV = "REMOVE_ADD"
+
+const addFav = (char) => {
+    return {
+        type: ADD_FAV,
+        payload: char,
+    }
+}
+
+const removeFav = (id) => {
+    return {
+        type: REMOVE_FAV,
+        payload: id,
+    }
+}
+
+export {
+    ADD_FAV,
+    REMOVE_FAV,
+    addFav,
+    removeFav,
+}

@@ -1,0 +1,13 @@
+.StyledButton {
+    margin-left: 0.5rem;
+}
+
+.StyledInput {
+    width: 30%;
+    background-color: #1F1FD1;
+    color: whitesmoke;
+}
+
+.addContainer {
+    margin-top: 3rem;
+}

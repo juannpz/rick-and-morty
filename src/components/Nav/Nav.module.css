@@ -1,0 +1,18 @@
+.linksContainer {
+
+}
+
+
+.link {
+    margin: 0.2rem;
+}
+
+.navContainer {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.searchBarContainer {
+    
+}

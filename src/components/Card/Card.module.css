@@ -1,0 +1,126 @@
+.CardContainer {
+    display: flex;
+    flex-direction: column;
+    background-image: url('../../img/rick-y-morty.png');
+    border-radius: 1rem;
+    width: 14rem;
+    margin: 1rem;
+    transition: all 0.7s;
+}
+
+@keyframes spiral {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0) rotate(720deg);
+    }
+  }
+  
+  .fadeOut {
+    animation: spiral 1s forwards;
+  }
+
+@media screen and (max-width: 768px) {
+    .CardContainer {
+        width: 10rem;
+    }
+  }
+
+.CardContainer:hover {
+    filter: hue-rotate(25deg) brightness(115%);
+    transition: filter 0.2s ease;
+}
+
+.ImageContainer {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.img {
+    width: 100%;
+    border-radius: 1rem;
+ }
+
+.Button {
+    color: whitesmoke;
+    background: none;
+    font-weight: bold;
+    font-size: 35px;
+    border: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.Button:hover {
+    color: #B72CC7;
+    transform: scaleX(2);
+    transition: filter 0.3s ease;
+}
+
+.InfoContainer {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.8rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.Info {
+    margin-bottom: 0.5rem;
+    color: #5AE304;
+    font-weight: bold;
+    background-color: #181ed2;
+    border-radius: 0.4rem;
+    width: 85%;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.NameContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 1rem;
+    align-items: center;
+    text-align: center;
+
+}
+
+.link {
+    text-decoration: none;
+}
+
+.StyledName {
+    background-color: #5AE304;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    border-radius: 0.3rem;
+    color: #181ed2;
+    font-size: auto;
+    font-weight: bold;
+    transition: transform 0.1s ease;
+    margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+}
+
+.StyledName:hover {
+    transform: scale(1.1);
+}
+
+.ButtonContainer {
+    display: flex;
+    justify-content: center;
+}
